@@ -1,0 +1,1 @@
+{"mappings":"","sources":["css/main.css"],"sourcesContent":[".game {\r\n    /* background: url('../src/img/bg.jpg'); */\r\n}\r\n\r\ncanvas {\r\n    /* position: absolute;\r\n    left: 0px;\r\n    top: 0px; */\r\n}"],"names":[],"version":3,"file":"index.47ca9330.css.map","sourceRoot":"/__parcel_source_root/"}
