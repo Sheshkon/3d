@@ -1,10 +1,7 @@
-import * as fs from 'fs';
-import { isObjectLiteralExpression } from 'typescript';
-const OBJFile = require('obj-file-parser');
-
+import obj from "bundle-text:../src/obj/test.obj";
+import { ObjParser } from "./obj.parser";
 
 const canvas = <HTMLCanvasElement> document.getElementById('canvas')
-const ctx = canvas.getContext('d2')
 const canvasRec = canvas.getBoundingClientRect()
 
 
@@ -32,6 +29,7 @@ class COLORS {
     static yellow = new HSL(60, 100, 50)
     static orange = new HSL(30, 100, 50)
     static purple = new HSL(300, 100, 50)
+    static white = new HSL(0, 0, 100)
 }
 
 class Vector3D {
@@ -76,7 +74,7 @@ class Triangle {
 
     public color: HSL
 
-    public constructor(p1: Vector3D, p2: Vector3D, p3: Vector3D, color: HSL) {
+    public constructor(p1: Vector3D, p2: Vector3D, p3: Vector3D, color: HSL = COLORS.red) {
         this.a = new Vector3D(p1.x, p1.y, p1.z)
         this.b = new Vector3D(p2.x, p2.y, p2.z)
         this.c = new Vector3D(p3.x, p3.y, p3.z)
@@ -88,6 +86,41 @@ class Triangle {
         // this.color.h = this.a.z * 60
         // this.color.l = this.a.z * 60
     }
+}
+
+
+class Mesh{
+    public triangles: Triangle[]
+
+    public constructor(obj: string | null) {
+        if (obj != null) {
+            this._createMesh(obj)
+        }
+
+    }
+
+    private _createMesh(obj: string) {
+        this.triangles = []
+        let _obj = ObjParser.parse(obj)
+
+        for (let i = 0; i < _obj.faces.length; i++) {
+            let face = _obj.faces[i]
+
+            let p1 = _obj.vertices[face[0]]
+            let p2 = _obj.vertices[face[1]]
+            let p3 = _obj.vertices[face[2]]
+
+            // let color = COLORS.white
+            let triangle = new Triangle(
+                new Vector3D(p1[0], p1[1], p1[2]),
+                new Vector3D(p2[0], p2[1], p2[2]),
+                new Vector3D(p3[0], p3[1], p3[2])
+                )
+
+            this.triangles.push(triangle)
+        }
+    }
+
 }
 
 class Matrix4x4 {
@@ -121,21 +154,27 @@ class Camera {
     }
 }
 
-
-class Cube {
-
+class Object3D {
     public position: Vector3D
-    public size: number
-    public mesh: Triangle[]
+    public mesh: Mesh
 
-
-    public constructor(position: Vector3D, size: number) {
+    public constructor(position: Vector3D, obj: string | null) {
         this.position = position
-        this.size = size
-        this.mesh = this.createMesh()
+        this.mesh = new Mesh(obj)
+    }
+}
+
+
+class Cube extends Object3D {
+    public size: number
+ 
+    public constructor(position: Vector3D) {
+        super(position, null);
+        this.position = position
+        this.mesh.triangles = this._createMesh()
     }
 
-    private createMesh() {
+    private _createMesh() {
         // console.log(COLORS.blue)
         return [
             new Triangle(new Vector3D(0.0, 0.0, 0.0), new Vector3D(0.0, 1.0, 0.0), new Vector3D(1.0, 1.0, 0.0), COLORS.blue),
@@ -250,15 +289,15 @@ class Render {
         this.ctx.lineTo(triangle.b.x, triangle.b.y)
         this.ctx.lineTo(triangle.c.x, triangle.c.y)
         this.ctx.closePath()
-        this.ctx.strokeStyle = triangle.color.toString()
-        // this.ctx.stroke()
+        this.ctx.strokeStyle = COLORS.white.toString()
+        this.ctx.stroke()
         triangle.changeLightness()
         // console.log(triangle.color)
         // console.log(triangle.a.y - triangle.b.y)
-        this.ctx.fillStyle = triangle.color.toString()
+        // this.ctx.fillStyle = triangle.color.toString()
         // console.log('triangle.a.z', triangle.a.z)
         // console.log('triangle.color', triangle.color)
-        this.ctx.fill()
+        // this.ctx.fill()
     }
 
     public rotateTriangle(triangle: Triangle, rotateMatrix: Matrix4x4) {
@@ -292,7 +331,7 @@ class Render {
     }
 
 
-    private drawMesh(obj: any, angle: number = 0.1) {
+    private drawMesh(obj: Object3D, angle: number = 0.1) {
         this.ctx.clearRect(0, 0, canvas.width, canvas.height)
         this.ctx.fillStyle = 'black'
         this.ctx.fillRect(0, 0, canvas.width, canvas.height )
@@ -301,17 +340,17 @@ class Render {
 
 
 
-        for (let triangle of obj.mesh) {
+        for (let triangle of obj.mesh.triangles) {
         
-            // triangle = this.rotateYTriangle(triangle, angle)
-            // // console.log('triangle', triangle)
-            // triangle = this.rotateZTriangle(triangle, angle)
+            triangle = this.rotateYTriangle(triangle, angle)
+            // console.log('triangle', triangle)
+            triangle = this.rotateZTriangle(triangle, angle)
             // console.log('rotateZTriangle', triangle)
             triangle = this.rotateXTriangle(triangle, angle)
 
-            triangle.a.z += 3
-            triangle.b.z += 3
-            triangle.c.z += 3
+            triangle.a.z += 8
+            triangle.b.z += 8
+            triangle.c.z += 8
 
             let normal = new Vector3D(0, 0, 0)
 
@@ -354,56 +393,20 @@ class Render {
         window.requestAnimationFrame(this.drawMesh.bind(this, obj, angle));
     }
 
-    public drawObj(obj: any) {
+    public drawObj(obj: Object3D) {
         this.drawMesh(obj)
     }
 }
 
 
 let camera = new Camera(new Vector3D(0, 0, 0), 0.1, 1000.0, 90.0, canvasRec.height / canvasRec.width)
-
-const cube = new Cube(new Vector3D(100, 100, 0), 300)
-
 let render = new Render(canvas, camera)
 
-
-// try {
-//   const data = fs.readFileSync('/Users/joe/test.txt', 'utf8');
-//   console.log(data);
-// } catch (err) {
-//   console.error(err);
-// }
+const cube = new Cube(new Vector3D(0, 0, 0))
+const teaCup = new Object3D(new Vector3D(0, 0, 0), obj)
 
 
-let result;
-fetch('/test.txt').then(response  => response.text()).then(text => {
-result = text.split('\n');
-})
+// render.drawObj(cube)
+render.drawObj(teaCup)
 
-
-
-
-
-// const output = objFile.parse();
-// let mesh : Triangle[] = []
-
-// let v = output.models[0].vertices
-// let f = output.models[0].faces
-// f.forEach(element => {
-    
-//     for(let vertice of element){
-//         mesh.push(new Triangle(
-//             new Vector3D(v[vertice[0] - 1].x, v[vertice[0] - 1].y, v[vertice[0] - 1].z),
-//             new Vector3D(v[vertice[1] - 1].x, v[vertice[1] - 1].y, v[vertice[1] - 1].z),
-//             new Vector3D(v[vertice[2] - 1].x, v[vertice[2] - 1].y, v[vertice[2] - 1].z),
-//             COLORS.red
-//         ))
-//     }
-
-// });
-
-// console.log(output, v, f)
-
-render.drawObj(cube)
-// console.log(mesh)
 

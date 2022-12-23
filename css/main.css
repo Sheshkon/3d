@@ -1,9 +1,9 @@
 .game {
-    /* background: url('../src/img/bg.jpg'); */
+    display: grid;
+    place-content: center;
+    height: 100vh;
 }
 
 canvas {
-    /* position: absolute;
-    left: 0px;
-    top: 0px; */
+    margin: auto;
 }
