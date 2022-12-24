@@ -1,4 +1,5 @@
 import { Color } from "./color";
+import { Vector3D } from "./vector3D";
 
 let  stopAnimation: boolean = false
 let frameCount: number = 0
@@ -22,6 +23,7 @@ export class Drawer {
         public data: Uint32Array
         public int24Color: number
         public update: () => void
+        public zBuffer: number[]
     
         constructor(canvas: HTMLCanvasElement, width: number, height: number, pixelSize: number) {
             this.canvas = canvas
@@ -36,6 +38,7 @@ export class Drawer {
             this.context.canvas.width = this.width
             this.context.canvas.height = this.height
             this.pixels = []
+            this.zBuffer = new Array(this.width * this.height).fill(-Infinity)
 
             for (let i = 0; i < this.width; i++) {
                 let cols = []
@@ -54,6 +57,10 @@ export class Drawer {
             startTime = then
             this.update = () => {}
         
+        }
+
+        public clearZBuffer(): void{
+            this.zBuffer = new Array(this.width * this.height).fill(-Infinity)
         }
       
         public setColor(color: Color): void{
@@ -126,7 +133,50 @@ export class Drawer {
             this.addLine(x2, y2, x0, y0)
         }
 
-        public fillTriangle(x0: number, y0: number, x1: number, y1: number, x2: number, y2: number): void {
+        public Barycentric(a: Vector3D, b: Vector3D, c: Vector3D, p: Vector3D): Vector3D{
+            let ab = b.subtract(a)
+            let ac = c.subtract(a)
+            let pa = a.subtract(p)
+        
+            let v1 = new Vector3D(ab.x, ac.x, pa.x)
+            let v2 = new Vector3D(ab.y, ac.y, pa.y)
+            let v3 = v1.crossProduct(v2)
+        
+            if (v3.z == 0) return null
+        
+            let u = v3.x / v3.z
+            let v = v3.y / v3.z
+        
+            return new Vector3D(1 - u - v, v, u)
+        }
+
+        public fillTriangleBarycentric(a: Vector3D, b:Vector3D, c: Vector3D): void {
+            let minX = Math.min(a.x, b.x, c.x)
+            let maxX = Math.max(a.x, b.x, c.x)
+
+            let minY = Math.min(a.y, b.y, c.y)
+            let maxY = Math.max(a.y, b.y, c.y)
+
+            for (let y = minY; y <= maxY; y++){
+                for (let x = minX; x <= maxX; x++){
+                    let barycentric = this.Barycentric(a, b, c, new Vector3D(x, y, 0))
+
+                    if (barycentric.x > 0 && barycentric.y > 0 && barycentric.z > 0){
+                        this.addPoint(x, y)
+                    }
+                }
+            }
+        }
+
+        public fillTriangle(a: Vector3D, b: Vector3D, c: Vector3D): void {
+
+            let x0 = a.x
+            let y0 = a.y
+            let x1 = b.x
+            let y1 = b.y
+            let x2 = c.x
+            let y2 = c.y
+
             // sort points by y
             // devide triangle on two parts
             // fill first part
@@ -173,7 +223,16 @@ export class Drawer {
                     [xFrom, xTo] = [xTo, xFrom];
                 }
                 for (let x = xFrom; x <= xTo; x++) {
-                    this.addPoint(x, y);          
+                    let barycentric = this.Barycentric(a, b, c, new Vector3D(x, y, 0))
+                    if (barycentric != null){
+                        let pz = a.z * barycentric.x + b.z * barycentric.y + c.z * barycentric.z
+                        let index = y * this.width + x
+
+                        if (pz > this.zBuffer[index]){
+                            this.addPoint(x, y)
+                            this.zBuffer[index] = pz
+                        }
+                    }
                 }
         
                 if (y >= y2) {
