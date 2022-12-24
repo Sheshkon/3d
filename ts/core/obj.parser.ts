@@ -12,7 +12,7 @@ export class ObjParser{
 
         for(let i = 0; i < _obj.length; i++){
             let line = _obj[i]
-            console.log(line)
+
             switch (line[0]) {
                 case "v":
                     lineItems = line.split(" ")
@@ -43,8 +43,6 @@ export class ObjParser{
             vertices: _vertices,
             faces: _faces
         }
-
-        console.log(_model)
 
         return _model;
     }
