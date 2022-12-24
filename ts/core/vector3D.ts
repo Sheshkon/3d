@@ -22,7 +22,7 @@ export class Vector3D {
         return new Vector3D(this.x - v.x, this.y - v.y, this.z - v.z)
     }
 
-    public normolize() {
+    public normalize() {
         let length = Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z)
         if (length != 0) {
             this.x /= length

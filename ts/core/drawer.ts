@@ -1,23 +1,9 @@
+import { Color } from "./color";
+
 let  stopAnimation: boolean = false
 let frameCount: number = 0
 let fps: number = 10, fpsInterval: number, startTime: number, now: number, then: number, elapsed: number
 
-
-class Color {
-
-    public r: number;
-    public g: number;
-    public b: number;
-    public a: number;
-
-    constructor(r: number, g: number, b: number, a: number = 255) {
-        this.r = r;
-        this.g = g;
-        this.b = b;
-        this.a = a;
-    }
-
-}
 
 export class Drawer {
     
@@ -70,9 +56,9 @@ export class Drawer {
         
         }
       
-        public setColor(r: number, g: number, b: number, a: number = 255): void{
-           this.currentColor = new Color(r, g, b, a)
-           this.int24Color = (255 << 24) | (b << 16) | (g << 8) | r
+        public setColor(color: Color): void{
+           this.currentColor = color
+           this.int24Color = (255 << 24) | (color.b << 16) | (color.g << 8) | color.r
         }
 
 
@@ -139,6 +125,72 @@ export class Drawer {
             this.addLine(x1, y1, x2, y2)
             this.addLine(x2, y2, x0, y0)
         }
+
+        public fillTriangle(x0: number, y0: number, x1: number, y1: number, x2: number, y2: number): void {
+            // sort points by y
+            // devide triangle on two parts
+            // fill first part
+            // fill second part
+            // user ctg to find x
+            
+            if (x0 == x1 && x1 == x2) {
+                return
+            }
+
+            if (y0 == y1 && y1 == y2) {
+                return
+            }
+
+            if (y1 < y0) {
+                [x0, x1] = [x1, x0];
+                [y0, y1] = [y1, y0];
+            }
+
+            if (y2 < y0) {
+                [x0, x2] = [x2, x0];
+                [y0, y2] = [y2, y0];
+            }
+
+            if (y2 < y1) {
+                [x1, x2] = [x2, x1];
+                [y1, y2] = [y2, y1];
+            }
+
+            let ctgA = (x2 - x0) / (y2 - y0);
+            let ctgB = y1 != y0 ? (x1 - x0) / (y1 - y0) : 0;
+            let ctgC = y2 != y1 ? (x2 - x1) / (y2 - y1) : 0;
+
+            let xA = x0;
+            let xB = x0;
+            let xC = x1;
+
+            let xFrom, xTo;
+
+            for (let y = y0;; y++) {
+                xFrom = Math.round(xA);
+                xTo = y < y1 ? Math.round(xB) : Math.round(xC);
+                if (xTo < xFrom) {
+                    [xFrom, xTo] = [xTo, xFrom];
+                }
+                for (let x = xFrom; x <= xTo; x++) {
+                    this.addPoint(x, y);          
+                }
+        
+                if (y >= y2) {
+                    break;
+                }
+        
+                xA += ctgA;
+                if (y < y1) {
+                    xB += ctgB;
+                }
+                else {
+                    xC += ctgC;
+                }
+            }
+        }
+
+
 
 
         public clear(): void {
