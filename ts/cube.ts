@@ -1,5 +1,6 @@
 import obj from "bundle-text:../src/obj/test.obj";
-import { ObjParser } from "./obj.parser";
+import shipObj from "bundle-text:../src/obj/ship.obj";
+import { ObjParser } from "./core/obj.parser";
 
 const canvas = <HTMLCanvasElement> document.getElementById('canvas')
 const canvasRec = canvas.getBoundingClientRect()
@@ -289,15 +290,15 @@ class Render {
         this.ctx.lineTo(triangle.b.x, triangle.b.y)
         this.ctx.lineTo(triangle.c.x, triangle.c.y)
         this.ctx.closePath()
-        this.ctx.strokeStyle = COLORS.white.toString()
+        this.ctx.strokeStyle = COLORS.blue.toString()
         this.ctx.stroke()
         triangle.changeLightness()
         // console.log(triangle.color)
         // console.log(triangle.a.y - triangle.b.y)
-        // this.ctx.fillStyle = triangle.color.toString()
+        this.ctx.fillStyle = triangle.color.toString()
         // console.log('triangle.a.z', triangle.a.z)
         // console.log('triangle.color', triangle.color)
-        // this.ctx.fill()
+        this.ctx.fill()
     }
 
     public rotateTriangle(triangle: Triangle, rotateMatrix: Matrix4x4) {
@@ -360,7 +361,7 @@ class Render {
             normal = line1.crossProduct(line2)
             normal.normolize()
 
-            if (normal.dotProduct(triangle.a.subtract(camera.position)) <= 0.0) {
+            if (normal.dotProduct(triangle.a.subtract(camera.position)) < 0.0) {
                
                 triangle = this.projectTriangle(triangle)
                 // console.log('mesh', triangle)
@@ -403,10 +404,11 @@ let camera = new Camera(new Vector3D(0, 0, 0), 0.1, 1000.0, 90.0, canvasRec.heig
 let render = new Render(canvas, camera)
 
 const cube = new Cube(new Vector3D(0, 0, 0))
-const teaCup = new Object3D(new Vector3D(0, 0, 0), obj)
+// const teaPot = new Object3D(new Vector3D(0, 0, 0), obj)
+const ship = new Object3D(new Vector3D(0, 0, 0), shipObj)
 
 
 // render.drawObj(cube)
-render.drawObj(teaCup)
+render.drawObj(ship)    
 
 
