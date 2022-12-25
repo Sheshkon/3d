@@ -150,12 +150,45 @@ export class Drawer {
             return new Vector3D(1 - u - v, v, u)
         }
 
-        public fillTriangleBarycentric(a: Vector3D, b:Vector3D, c: Vector3D): void {
-            let minX = Math.min(a.x, b.x, c.x)
-            let maxX = Math.max(a.x, b.x, c.x)
+        public Barycentric1(a: Vector3D, b: Vector3D, c: Vector3D, p: Vector3D): Vector3D{
+            let ab = b.subtract(a)
+            let ac = c.subtract(a)
+            let pa = a.subtract(p)
 
-            let minY = Math.min(a.y, b.y, c.y)
-            let maxY = Math.max(a.y, b.y, c.y)
+            const dot00 = ac.dotProduct(ac)
+            const dot01 = ac.dotProduct(ab)
+            const dot02 = ac.dotProduct(pa)
+            const dot11 = ab.dotProduct(ab)
+            const dot12 = ab.dotProduct(pa)
+
+            const denom = dot00 * dot11 - dot01 * dot01
+
+            if (denom == 0) return null
+
+            const invDenom = 1 / denom
+
+            const u = (dot11 * dot02 - dot01 * dot12) * invDenom
+            const v = (dot00 * dot12 - dot01 * dot02) * invDenom
+
+            return new Vector3D(1 - u - v, v, u)
+
+        }
+
+        private _findMinMax(a: number, b: number, c: number): [number ,number]{
+            let min = a
+            let max = a
+
+            if (b < min) min = b
+            if (c < min) min = c
+            if (b > max) max = b
+            if (c > max) max = c
+
+            return [min, max]
+        }
+
+        public fillTriangleBarycentric(a: Vector3D, b:Vector3D, c: Vector3D): void {
+            const [minX, maxX] = this._findMinMax(a.x, b.x, c.x)
+            const [minY, maxY] = this._findMinMax(a.y, b.y, c.y)
 
             for (let y = minY; y <= maxY; y++){
                 for (let x = minX; x <= maxX; x++){
