@@ -8,7 +8,6 @@ export class ObjParser{
 
         let _obj = obj.split("\n");
         let _vertices = [];
-        let _faces = [];
         let _normals = [];
         let _textureCoords = [];
         let mesh = []
@@ -22,31 +21,32 @@ export class ObjParser{
 
             switch (line[0]) {
                 case "v":
-                    lineItems = line.split(" ")
+                    lineItems = line.trim().substring(2).trim().split(" ")
                     switch (line[1]){
                         case " ":
                             _vertices.push(new Vector3D(
+                                parseFloat(lineItems[0]),
                                 parseFloat(lineItems[1]),
-                                parseFloat(lineItems[2]),
-                                parseFloat(lineItems[3])
+                                parseFloat(lineItems[2])
                                 )
                             )   
                         break
 
                         case "t":
                             _textureCoords.push(new Vector3D(
-                                parseFloat(lineItems[2]),
-                                parseFloat(lineItems[3]),
-                                0.0
+                                parseFloat(lineItems[0]),
+                                parseFloat(lineItems[1]),
+                                0
                                 )
                             )
                         break
 
                         case "n":
+                            
                             _normals.push(new Vector3D(
-                                parseFloat(lineItems[2]),
-                                parseFloat(lineItems[3]),
-                                parseFloat(lineItems[4])
+                                parseFloat(lineItems[0]),
+                                parseFloat(lineItems[1]),
+                                parseFloat(lineItems[2])
                                 )
                             )
                         break
