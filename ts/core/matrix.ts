@@ -1,4 +1,4 @@
-import { Vector3D } from "./vector3D"
+import { Vector3D } from "./vector"
 
 export class Matrix3x3 {
     m : number[][]
