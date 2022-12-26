@@ -1,5 +1,6 @@
 import { Color } from "./color";
-import { Vector3D } from "./vector3D";
+import { Triangle } from "./triangle";
+import { Vector3D } from "./vector";
 
 let  stopAnimation: boolean = false
 let frameCount: number = 0
@@ -24,6 +25,7 @@ export class Drawer {
         public int24Color: number
         public update: () => void
         public zBuffer: number[]
+        public textureBuffer: Uint8ClampedArray
     
         constructor(canvas: HTMLCanvasElement, width: number, height: number, pixelSize: number) {
             this.canvas = canvas
@@ -67,7 +69,6 @@ export class Drawer {
            this.currentColor = color
            this.int24Color = (255 << 24) | (color.b << 16) | (color.g << 8) | color.r
         }
-
 
         public addPoint(x: number, y: number): void {
             let canvasX = x;
@@ -174,6 +175,30 @@ export class Drawer {
 
         }
 
+        public Barycentric2(a: Vector3D, b: Vector3D, c: Vector3D, p: Vector3D): Vector3D{
+                let v0 = b.subtract(a)
+                let v1 = c.subtract(a)
+                let v2 = p.subtract(a)
+
+                let d00 = v0.dotProduct(v0)
+                let d01 = v0.dotProduct(v1)
+                let d11 = v1.dotProduct(v1)
+                let d20 = v2.dotProduct(v0)
+                let d21 = v2.dotProduct(v1)
+
+                let denom = d00 * d11 - d01 * d01
+                
+                if (denom == 0) return null
+
+                let v = (d11 * d20 - d01 * d21) / denom
+                let w = (d00 * d21 - d01 * d20) / denom
+                let u = 1 - v - w
+
+                return new Vector3D(u, v, w)
+
+
+            }
+
         private _findMinMax(a: number, b: number, c: number): [number ,number]{
             let min = a
             let max = a
@@ -186,22 +211,60 @@ export class Drawer {
             return [min, max]
         }
 
-        public fillTriangleBarycentric(a: Vector3D, b:Vector3D, c: Vector3D): void {
+        public fillTriangleBarycentric(a: Vector3D, b:Vector3D, c: Vector3D, textureTriangle: Triangle = null, intensity = 1): void {
             const [minX, maxX] = this._findMinMax(a.x, b.x, c.x)
             const [minY, maxY] = this._findMinMax(a.y, b.y, c.y)
 
             for (let y = minY; y <= maxY; y++){
                 for (let x = minX; x <= maxX; x++){
+                    
                     let barycentric = this.Barycentric(a, b, c, new Vector3D(x, y, 0))
+                    let index = y * this.width + x
+                    if (barycentric == null){
+                        continue
+                    }
+                    let pz = a.z * barycentric.x + b.z * barycentric.y + c.z * barycentric.z
 
+                    if (pz <= this.zBuffer[index]){
+                        continue
+                    }
                     if (barycentric.x > 0 && barycentric.y > 0 && barycentric.z > 0){
                         this.addPoint(x, y)
+
+                        let uv = this.interpolation(textureTriangle, barycentric)
+                        // console.log(textureTriangle)
+                        // console.log(uv)
+                        // console.log('coords:',  uv.x * 64, uv.y * 64)
+                        // console.log(uv.x * 1024, uv.y * 1024)
+                        let rIndx = 4 *(Math.ceil(uv.x*1024)  + Math.ceil(uv.y * 1024)*1024)
+                        // console.log(rIndx)
+
+                        // console.log(rIndx)
+                        let c = new Color(this.textureBuffer[rIndx]*intensity, this.textureBuffer[rIndx+1]*intensity, this.textureBuffer[rIndx+1]*intensity)
+                        // console.log('color', c)
+                        this.setColor(c)
+                    // }
+                    
+                    this.addPoint(x, y)
+                    this.zBuffer[index] = pz
                     }
                 }
             }
         }
 
-        public fillTriangle(a: Vector3D, b: Vector3D, c: Vector3D): void {
+        public interpolation(textureTriangle: Triangle, barycentric: Vector3D): Vector3D {
+
+            // console.log(barycentric.x + barycentric.y + barycentric.z)
+            let texturePoint = 
+                textureTriangle.a.multiply(barycentric.x).add(
+                    textureTriangle.b.multiply(barycentric.y).add(
+                        textureTriangle.c.multiply(barycentric.z)
+                )
+                )
+            return texturePoint
+        }
+
+        public fillTriangle(a: Vector3D, b: Vector3D, c: Vector3D, textureTriangle: Triangle = null, intensity: number = 1): void {
 
             let x0 = a.x
             let y0 = a.y
@@ -261,7 +324,25 @@ export class Drawer {
                         let pz = a.z * barycentric.x + b.z * barycentric.y + c.z * barycentric.z
                         let index = y * this.width + x
 
+                        // let uv = this.fromBarycentricTo(barycentric, textureTriangle.a.multiply(64), textureTriangle.b.multiply(64), textureTriangle.c.multiply(64))
+                               
                         if (pz > this.zBuffer[index]){
+                            // if (textureTriangle != null) {
+
+
+                                let uv = this.interpolation(textureTriangle, barycentric)
+                                // console.log(textureTriangle)
+                                // console.log(uv)
+                                // console.log('coords:',  uv.x * 64, uv.y * 64)
+                                // console.log(uv.x * 1024, uv.y * 1024)
+                                let rIndx = 4 *(Math.ceil(uv.x*1024)  + Math.ceil(uv.y * 1024)*1024)
+                                // console.log(rIndx)
+
+                                // console.log(rIndx)
+                                let c = new Color(this.textureBuffer[rIndx]*intensity, this.textureBuffer[rIndx+1]*intensity, this.textureBuffer[rIndx+1]*intensity)
+                                // console.log('color', c)
+                                this.setColor(c)
+                            // }
                             this.addPoint(x, y)
                             this.zBuffer[index] = pz
                         }
