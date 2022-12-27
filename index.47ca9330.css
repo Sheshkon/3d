@@ -1,0 +1,11 @@
+.game {
+  height: 90vh;
+  place-content: center;
+  display: grid;
+}
+
+canvas {
+  margin: auto;
+}
+
+/*# sourceMappingURL=index.47ca9330.css.map */
