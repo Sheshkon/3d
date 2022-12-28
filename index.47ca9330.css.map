@@ -1,1 +1,0 @@
-{"mappings":"AAAA;;;;;;AAMA","sources":["css/main.css"],"sourcesContent":[".game {\r\n    display: grid;\r\n    place-content: center;\r\n    height: 90vh;\r\n}\r\n\r\ncanvas {\r\n    margin: auto;\r\n}"],"names":[],"version":3,"file":"index.47ca9330.css.map","sourceRoot":"/__parcel_source_root/"}
