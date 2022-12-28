@@ -1,18 +1,17 @@
-// var texture = new Image()
+/** @param {string} source */
+async function imageDataFromSource (source) {
+    const image = Object.assign(new Image(), { src: source });
+    await new Promise<void>(resolve => image.addEventListener('load', () => resolve()));
+    const context = Object.assign(document.createElement('canvas'), {
+       width: image.width,
+       height: image.height
+    }).getContext('2d');
+    context.imageSmoothingEnabled = false;
+    context.drawImage(image, 0, 0);
+    return context.getImageData(0, 0, image.width, image.height);
+ }
 
-// texture.src = require('../../src/obj/texture.png')
 
-
-// console.log('start')
-// texture.onload = () => {
-//     console.log('loaded')
-//     const context = document.createElement('canvas').getContext('2d');
-//     context.drawImage(texture, 0, 0);
-//     const
-//     {
-//         data
-//     } = context.getImageData(0, 0, texture.width, texture.height)
-    
-//     console.log('data',data)
-// }
-
+export async function getTextureData (source) {
+   return await imageDataFromSource(source)
+}

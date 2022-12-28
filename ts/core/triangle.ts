@@ -1,6 +1,4 @@
-import { Color } from "./color"
 import { Vector3D } from "./vector"
-
 
 export class Triangle {
 
@@ -13,5 +11,4 @@ export class Triangle {
         this.b = new Vector3D(p2.x, p2.y, p2.z)
         this.c = new Vector3D(p3.x, p3.y, p3.z)
     }
-
 }

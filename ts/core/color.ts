@@ -16,10 +16,7 @@ export class Color {
         return new Color(this._getRandomInt(255), this._getRandomInt(255), this._getRandomInt(255))
     }
 
-    private static  _getRandomInt(max: number) {
+    private static  _getRandomInt(max: number): number {
         return Math.floor(Math.random() * Math.floor(max+1));
     }
-
 }
-
-

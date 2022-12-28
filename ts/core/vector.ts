@@ -42,7 +42,6 @@ export class Vector3D extends Vector2D {
         this.z = z
     }
   
-
     // right hand coordinate system
     public crossProduct(v: Vector3D): Vector3D {
         return new Vector3D(this.y * v.z - this.z * v.y, this.z * v.x - this.x * v.z, this.x * v.y - this.y * v.x)

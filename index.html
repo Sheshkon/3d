@@ -6,15 +6,40 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" type="text/css" href="./css/main.css">
-    <title>Game</title>
+    <title>Render</title>
 </head>
 
 <body>
     <div class="game">
         <canvas id="canvas"></canvas>
+        <button id="next">Next</button>
+        <script type="module" src="./ts/main.ts"></script>
+        <div class="controlBtns">
+            <button id="rotateY">Rotate Y</button>
+            <button id="rotateX">Rotate X</button>
+            <button id="rotateZ">Rotate Z</button>
+            <button id="rotateMinusY">Rotate -Y</button>
+            <button id="rotateMinusX">Rotate -X</button>
+            <button id="rotateMinusZ">Rotate -Z</button>
+            <button id="rotateStop">Stop</button>
+            <button id="scaleUp">Zoom +</button>
+            <button id="scaleDown">Zoom -</button>
+        </div>
+
     </div>
-    <script type="module" src="./ts/core/texture.color.parser.ts"></script>
-    <script type="module" src="./ts/main.ts"></script>
+
+    <div class="stick ">
+        <div class="stickX ">
+
+        </div>
+
+        <div class="stickY ">
+
+        </div>
+    </div>
+
+    <!-- <script type="module " src="./ts/core/texture.color.parser.ts "></script> -->
+
 
 </body>
 
