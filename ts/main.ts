@@ -55,7 +55,7 @@ for (let i = 0; i < cntrlBtns.length; i++) {
 
         rotationPos[i] = 1
         rotationPos[cntrlBtns.length - i - 1] = 0
-        console.log(rotationPos)
+        // console.log(rotationPos)
     })
 }
 
@@ -68,7 +68,7 @@ for (let i = 0; i < scaleBtns.length; i++) {
 
 
 getTextureData(textureDog.src).then(data => {
-    console.log('data', data)
+    // console.log('data', data)
         modelDog = new Model(parsedDog.mesh, parsedDog.textureCords, parsedDog.normals, data);
         console.log(modelDog);
         models.push(modelDog)
@@ -76,7 +76,7 @@ getTextureData(textureDog.src).then(data => {
 
 
         getTextureData(textureMan.src).then(data => {
-            console.log('data', data)
+            // console.log('data', data)
                 modelMan = new Model(parsedMan.mesh, parsedMan.textureCords, parsedMan.normals, data);
                 console.log(modelMan);
                 models.push(modelMan)
@@ -93,7 +93,7 @@ getTextureData(textureDog.src).then(data => {
 
 function setUpNextBtn(){
     document.getElementById("next").addEventListener("click", () => {
-    console.log("next");
+    // console.log("next");
     counter++
     if (counter > models.length - 1) counter = 0
     currentModel = counter
@@ -149,7 +149,7 @@ function rotateModel(){
 }
 
 let rect = canvas.getBoundingClientRect()
-console.log(rect.top, rect.right, rect.bottom, rect.left)
+// console.log(rect.top, rect.right, rect.bottom, rect.left)
 
 function update(){
     render.render()
@@ -159,7 +159,7 @@ function update(){
 
 
 document.addEventListener("mousemove", e => {
-    console.log(e.pageX, e.pageY)
+    // console.log(e.pageX, e.pageY)
     if (e.pageX < rect.left || e.pageX > rect.right || e.pageY > rect.bottom || e.pageY < rect.top) { 
             return 
         }
